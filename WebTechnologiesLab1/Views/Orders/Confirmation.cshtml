@@ -1,0 +1,80 @@
+﻿@model WebTechnologiesLab1.Models.Order
+@{
+    ViewData["Title"] = "Замовлення підтверджено";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-success text-white text-center">
+                <h2>🎉 Дякуємо! Ваше замовлення успішно оформлено!</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    Ваше замовлення **#@Model.Id** прийнято в обробку.
+                    Ми зв'яжемося з Вами найближчим часом.
+                </p>
+                <hr />
+
+                <h4>Деталі замовлення</h4>
+                <dl class="row">
+                    <dt class="col-sm-4">Дата замовлення:</dt>
+                    <dd class="col-sm-8">@Model.OrderDate.ToShortDateString()</dd>
+
+                    <dt class="col-sm-4">Загальна сума:</dt>
+                    <dd class="col-sm-8"><strong>@Model.TotalAmount.ToString("C")</strong></dd>
+
+                    <dt class="col-sm-4">Статус:</dt>
+                    <dd class="col-sm-8">@Model.Status</dd>
+                    
+                    @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
+                    {
+                        <dt class="col-sm-4">Адреса доставки:</dt>
+                        <dd class="col-sm-8">@Model.DeliveryAddress</dd>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                    {
+                        <dt class="col-sm-4">Телефон:</dt>
+                        <dd class="col-sm-8">@Model.PhoneNumber</dd>
+                    }
+                </dl>
+                
+                <hr />
+
+                <h4>Склад замовлення</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Товар ID</th>
+                            <th>Кількість</th>
+                            <th>Ціна на момент покупки</th>
+                            <th>Сума</th>
+                        </tr>
+                    </thead>
+                    <tbody
+                        @if (Model.OrderItems != null)
+                        {
+                            @foreach (var item in Model.OrderItems)
+                            {
+                                <tr>
+                                    <td>@item.ProductId</td> 
+                                    <td>@item.Quantity</td>
+                                    <td>@item.PriceAtPurchase.ToString("C")</td>
+                                    <td>@(item.PriceAtPurchase * item.Quantity)</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="4">Деталі товарів не завантажено.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-center">
+                <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Продовжити покупки</a>
+            </div>
+        </div>
+    </div>
+</div>

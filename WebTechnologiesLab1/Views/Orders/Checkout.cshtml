@@ -1,0 +1,63 @@
+﻿@model WebTechnologiesLab1.Models.Cart
+@{
+    ViewData["Title"] = "Оформлення замовлення";
+}
+
+<h1>Оформлення замовлення</h1>
+<hr />
+
+<form asp-action="PlaceOrder" method="post">
+    @Html.AntiForgeryToken()
+
+    <h2>Ваше замовлення</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Кількість</th>
+                <th>Ціна</th>
+                <th>Сума</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                decimal total = 0;
+            }
+            @foreach (var item in Model.CartItems)
+            {
+                var itemTotal = item.Quantity * item.Product.price;
+                total += itemTotal;
+                <tr>
+                    <td>@item.Product.name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Product.price.ToString("C")</td>
+                    <td>@itemTotal.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-right"><strong>Загальна сума:</strong></td>
+                <td><strong>@total.ToString("C")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h3>Дані для доставки</h3>
+
+    <div class="form-group">
+        <label for="DeliveryAddress">Адреса доставки</label>
+        <input name="DeliveryAddress" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="PhoneNumber">Номер телефону</label>
+        <input name="PhoneNumber" class="form-control" required />
+    </div>
+
+    <hr />
+
+    <div class="form-group">
+        <input type="submit" value="Підтвердити та оформити замовлення" class="btn btn-lg btn-primary" />
+    </div>
+</form>

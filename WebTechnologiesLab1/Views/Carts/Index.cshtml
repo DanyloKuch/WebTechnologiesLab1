@@ -1,0 +1,58 @@
+﻿@model WebTechnologiesLab1.Models.Cart
+@* Тепер Model - це ОДИН об'єкт Cart *@
+
+@{
+    ViewData["Title"] = "Ваш кошик";
+}
+
+<h1>Ваш кошик</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Товар</th>
+            <th>Ціна</th>
+            <th>Кількість</th>
+            <th>Сума</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.CartItems)
+        {
+            @* Тепер ітеруємо елементи кошика (CartItem) *@
+            <tr>
+                <td>
+                    @* Використовуємо навігаційну властивість Product *@
+                    @Html.DisplayFor(modelItem => item.Product.name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.price)
+                </td>
+                <td>
+                    <form asp-controller="Carts" asp-action="UpdateQuantity" method="post">
+                        <input type="hidden" name="cartItemId" value="@item.Id" />
+                        <input type="number" name="newQuantity" value="@item.Quantity" class="form-control" min="1" style="width: 80px;" />
+                        <input type="submit" value="Оновити" class="btn btn-sm btn-info" />
+                    </form>
+                </td>
+                <td>
+                    @* Обчислювана загальна сума для рядка *@
+                    @(item.Product.price* item.Quantity)
+                </td>
+                <td>
+                    @* Кнопка "Видалити" (відправляє форму POST на контролер)*@
+                    <form asp-controller="Cart" asp-action="RemoveItem" method="post">
+                        <input type="hidden" name="cartItemId" value="@item.Id" />
+                        <input type="submit" value="Видалити" class="btn btn-sm btn-danger" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+@* Кнопка "Оформити замовлення" *@
+<a asp-controller="Orders" asp-action="Checkout" class="btn btn-success btn-lg">Оформити замовлення</a>
