@@ -1,0 +1,45 @@
+name: Deploy ASP.NET MVC to Azure App Service
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  DOTNET_VERSION: '9.0.x' 
+  
+  PROJECT_PATH: 'WebTechnologiesLab1/WebTechnologiesLab1.csproj' 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout code 
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Крок 1: Збірка та Публікація проєкту
+      - name: Build and Publish project
+        # Публікуємо проєкт, використовуючи точний шлях до файлу .csproj
+        run: dotnet publish ${{ env.PROJECT_PATH }} -c Release -o ${{ github.workspace }}/publish
+
+      # Крок 2: Аутентифікація в Azure (використовує секрет AZURE_CREDENTIALS)
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Крок 3: Розгортання в Azure Web App
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
+          package: ${{ github.workspace }}/publish # Шлях до опублікованих файлів
