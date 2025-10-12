@@ -2,7 +2,7 @@ name: Docker CI/CD for WebTechnologiesLab1
 
 on: 
   push: 
-    branches: ["master"] 
+    branches: ["MVC-Project"] 
 
 env:
   AZURE_WEBAPP_NAME: labwebtech 
