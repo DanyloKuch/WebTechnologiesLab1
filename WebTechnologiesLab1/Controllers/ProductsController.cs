@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebTechnologiesLab1.Data;
 using WebTechnologiesLab1.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebTechnologiesLab1.Controllers
 {
-
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly WebDbContext _context;
