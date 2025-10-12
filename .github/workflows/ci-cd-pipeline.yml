@@ -9,7 +9,7 @@ env:
   
   DOCKER_IMAGE_NAME: kucherukdanylo/webtechlab1 
   
-  DOTNET_CORE_VERSION: 9.0.
+  DOTNET_CORE_VERSION: 9.0.0
   
   WORKING_DIRECTORY: ./WebTechnologiesLab1 
 
