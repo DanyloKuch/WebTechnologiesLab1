@@ -15,7 +15,7 @@ env:
 
 jobs: 
   # Виконуємо збірку, щоб перевірити, чи код компілюється (Це етап-перевірка)
-  build:
+  build:        
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
       run: |
         IMAGE_TAG=${{ github.sha }}
         # Збірка: Вказуємо папку з контекстом та Dockerfile
-        docker build ${{ env.WORKING_DIRECTORY }} -t ${{ env.DOCKER_IMAGE_NAME }}:$IMAGE_TAG
+        docker build . -f ${{ env.WORKING_DIRECTORY }}/Dockerfile    -t ${{ env.DOCKER_IMAGE_NAME }}:$IMAGE_TAG
         # Публікація
         docker push ${{ env.DOCKER_IMAGE_NAME }}:$IMAGE_TAG
         
