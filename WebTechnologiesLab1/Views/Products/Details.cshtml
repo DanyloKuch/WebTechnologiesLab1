@@ -4,45 +4,44 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1 class="display-4 mb-4">Деталі Товару</h1>
 
-<div>
-    <h4>Product</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.imageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.imageUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="card shadow-sm">
+    <div class="row g-0">
+        <div class="col-md-4">
+            <img src="@Model.imageUrl" class="img-fluid rounded-start" alt="@Model.name" style="height: 100%; object-fit: cover;">
+        </div>
+
+        <div class="col-md-8">
+            <div class="card-body">
+                <h3 class="card-title">@Html.DisplayFor(model => model.name)</h3>
+                <h4 class="text-success mb-3">
+                    Ціна: <span class="badge bg-success fs-5">@Html.DisplayFor(model => model.price)</span>
+                </h4>
+
+                <hr />
+
+                <dl class="row">
+                    <dt class="col-sm-3">
+                        @Html.DisplayNameFor(model => model.description)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.description)
+                    </dd>
+
+                    <dt class="col-sm-3">
+                        Категорія
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.Category.Name)
+                    </dd>
+                </dl>
+
+                <div class="mt-4">
+                    <a asp-action="Edit" asp-route-id="@Model?.id" class="btn btn-warning me-2">Змінити</a>
+                    <a asp-action="Index" class="btn btn-secondary">Повернутися до Списку</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

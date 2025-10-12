@@ -1,8 +1,19 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Головна";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+    <div class="container-fluid py-5 text-center">
+        <h1 class="display-4 fw-bold text-primary">Ласкаво просимо до AppName!</h1>
+        <p class="col-md-8 fs-5 mx-auto text-muted">
+            Тут ви знайдете широкий асортимент товарів та ігор. Наш інтернет-магазин використовує сучасну архітектуру ASP.NET Core для швидкої та безпечної роботи.
+        </p>
+        <hr class="my-4">
+        <p class="fs-5">
+            Перегляньте наш каталог, щоб розпочати покупки або керувати товарами.
+        </p>
+        <a class="btn btn-primary btn-lg mt-3" asp-area="" asp-controller="Products" asp-action="Index" role="button">
+            Перейти до Каталогу Товарів
+        </a>
+    </div>
 </div>

@@ -1,78 +1,71 @@
 ﻿@model IEnumerable<WebTechnologiesLab1.Models.Product>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Каталог Товарів";
 }
 
-<h1>Index</h1>
+<h1 class="display-4 mb-4">Каталог Товарів</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
+<p class="mb-4">
+    <a asp-action="Create" class="btn btn-primary">Створити Новий Товар</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.imageUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>Додати в кошик</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.price)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.imageUrl)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Category.Name)
-                </td>
 
-                @* --- НОВА КОЛОНКА ДЛЯ КОШИКА --- *@
-                <td>
-                    <form asp-controller="Carts" asp-action="AddItem" method="post">
+@* Замість таблиці використовуємо гнучку сітку Bootstrap:
+   - row-cols-1: 1 картка на мобільному
+   - row-cols-md-3: 3 картки на середньому екрані і більше
+   - g-4: проміжок між картками *@
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    @foreach (var item in Model)
+    {
+        @* Кожен продукт - це окрема колонка сітки *@
+        <div class="col">
+            @* Картка: h-100 фіксує висоту для всіх карток в ряду, shadow-sm додає тінь *@
+            <div class="card h-100 shadow-sm">
+                @* Зображення товару зверху *@
+                <img src="@item.imageUrl" class="card-img-top" alt="@item.name" style="height: 200px; object-fit: cover;">
 
-                        @* Приховане поле для передачі ID продукту *@
+                <div class="card-body d-flex flex-column">
+                    @* Назва і категорія *@
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">@Html.DisplayFor(modelItem => item.name)</h5>
+                        <span class="badge bg-secondary">@Html.DisplayFor(modelItem => item.Category.Name)</span>
+                    </div>
+
+                    @* Опис (обмеження тексту) *@
+                    <p class="card-text text-muted">
+                        @(item.description != null && item.description.Length > 100 ? item.description.Substring(0, 100) + "..." : item.description)
+                    </p>
+
+                    @* Ціна *@
+                    <div class="mt-auto">
+                        <h4 class="text-success mt-2">
+                            <span class="badge bg-success fs-5">@Html.DisplayFor(modelItem => item.price) грн.</span>
+                        </h4>
+                    </div>
+                </div>
+
+                @* Футер картки для кошика та кнопок керування *@
+                <div class="card-footer bg-light">
+                    @* Форма "Додати в кошик" *@
+                    <form asp-controller="Carts" asp-action="AddItem" method="post" class="d-flex justify-content-between align-items-center mb-3">
                         <input type="hidden" name="productId" value="@item.id" />
-
-                        @* Поле для кількості *@
-                        <input type="number" name="quantity" value="1" min="1" style="width: 50px;" />
-
-                        @* Кнопка, яка відправить форму (POST запит) *@
-                        <input type="submit" value="+" class="btn btn-sm btn-success" />
+                        <label for="quantity-@item.id" class="form-label me-2 mb-0">Кількість:</label>
+                        <input type="number" name="quantity" id="quantity-@item.id" value="1" min="1" class="form-control me-2" style="width: 70px;" />
+                        <button type="submit" class="btn btn-success flex-shrink-0">
+                            Додати
+                        </button>
                     </form>
-                </td>
-                @* ---------------------------------- *@
 
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    @* Кнопки керування (CRUD) *@
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@item.id" class="btn btn-sm btn-outline-primary">Деталі</a>
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@item.id" class="btn btn-sm btn-warning me-1">Змінити</a>
+                            <a asp-action="Delete" asp-route-id="@item.id" class="btn btn-sm btn-danger">Видалити</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
