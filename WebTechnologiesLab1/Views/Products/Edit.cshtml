@@ -10,9 +10,11 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="id" />
+            <input type="hidden" asp-for="imageUrl" />
+
             <div class="form-group">
                 <label asp-for="name" class="control-label"></label>
                 <input asp-for="name" class="form-control" />
@@ -29,16 +31,27 @@
                 <span asp-validation-for="description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="imageUrl" class="control-label"></label>
-                <input asp-for="imageUrl" class="form-control" />
-                <span asp-validation-for="imageUrl" class="text-danger"></span>
+                <label class="control-label">Current Image</label>
+                <br />
+                @if (!string.IsNullOrEmpty(Model.imageUrl))
+                {
+                    <img src="@Model.imageUrl" style="max-width: 200px; height: auto;" />
+                }
+                else
+                {
+                    <span>No image</span>
+                }
+            </div>
+            <div class="form-group">
+                <label class="control-label">Upload New Image</label>
+                <input type="file" name="imageFile" class="form-control" />
             </div>
             <div class="form-group">
                 <label asp-for="CategoryId" class="control-label"></label>
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="margin-top: 15px;">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
@@ -50,5 +63,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

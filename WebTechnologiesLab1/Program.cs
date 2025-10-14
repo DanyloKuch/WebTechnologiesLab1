@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebTechnologiesLab1;
 using WebTechnologiesLab1.Data;
 using WebTechnologiesLab1.Models;
+using WebTechnologiesLab1.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,8 @@ builder.Services.AddDbContext<WebDbContext>(options =>
     ));
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<WebDbContext>();
+
+builder.Services.AddScoped<BlobStorageService>();
 
 builder.Services.AddRazorPages();
 
