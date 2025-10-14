@@ -67,7 +67,7 @@ namespace WebTechnologiesLab1.Controllers
             {
                 if (imageFile != null)
                 {
-                    string imageUrlString = await _blobStorageService.UploadFileAsync(imageUrl, "product-images");
+                    string imageUrlString = await _blobStorageService.UploadFileAsync(imageFile, "product-images");
                     product.imageUrl = imageUrlString;
                 }
                 _context.Add(product);
