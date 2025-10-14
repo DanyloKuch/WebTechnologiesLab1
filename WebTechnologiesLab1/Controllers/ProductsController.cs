@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebTechnologiesLab1.Data;
 using WebTechnologiesLab1.Models;
 using Microsoft.AspNetCore.Authorization;
+using WebTechnologiesLab1.Services;
 
 namespace WebTechnologiesLab1.Controllers
 {
@@ -16,10 +17,12 @@ namespace WebTechnologiesLab1.Controllers
     public class ProductsController : Controller
     {
         private readonly WebDbContext _context;
+        private readonly BlobStorageService _blobStorageService;
 
-        public ProductsController(WebDbContext context)
+        public ProductsController(WebDbContext context, BlobStorageService blobStorageService)
         {
             _context = context;
+            _blobStorageService = blobStorageService;
         }
         // GET: Products
         public async Task<IActionResult> Index()
@@ -58,10 +61,15 @@ namespace WebTechnologiesLab1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,name,price,description,imageUrl,CategoryId")] Product product)
+        public async Task<IActionResult> Create([Bind("id,name,price,description,imageUrl,CategoryId")] Product product, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
+                if (imageFile != null)
+                {
+                    string imageUrlString = await _blobStorageService.UploadFileAsync(imageUrl, "product-images");
+                    product.imageUrl = imageUrlString;
+                }
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -92,7 +100,7 @@ namespace WebTechnologiesLab1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,name,price,description,imageUrl,CategoryId")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("id,name,price,description,imageUrl,CategoryId")] Product product, IFormFile imageFile)
         {
             if (id != product.id)
             {
@@ -103,6 +111,20 @@ namespace WebTechnologiesLab1.Controllers
             {
                 try
                 {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        // Спочатку видаляємо старе зображення, якщо воно було
+                        if (!string.IsNullOrEmpty(product.imageUrl))
+                        {
+                            await _blobStorageService.DeleteFileAsync(product.imageUrl);
+                        }
+
+                        // Завантажуємо новий файл і отримуємо його URL
+                        string imageUrlString = await _blobStorageService.UploadFileAsync(imageFile, "product-images");
+
+                        // Оновлюємо URL в моделі
+                        product.imageUrl = imageUrlString;
+                    }
                     _context.Update(product);
                     await _context.SaveChangesAsync();
                 }
@@ -150,6 +172,11 @@ namespace WebTechnologiesLab1.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
+                if (!string.IsNullOrEmpty(product.imageUrl))
+                {
+                    // Видаляємо файл зі сховища Azure
+                    await _blobStorageService.DeleteFileAsync(product.imageUrl);
+                }
                 _context.Products.Remove(product);
             }
 
