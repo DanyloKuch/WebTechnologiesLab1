@@ -37,16 +37,17 @@ namespace WebTechnologiesLab1.Services
             return blobClient.Uri.ToString();
         }
 
+        // Services/BlobStorageService.cs
+
         public async Task DeleteFileAsync(string fileUrl)
         {
-            if (string.IsNullOrEmpty(fileUrl))
+            if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out Uri blobUri))
             {
                 return;
             }
 
-            Uri uri = new Uri(fileUrl);
-            string containerName = uri.Segments[1].Trim('/');
-            string blobName = uri.Segments[2];
+            string containerName = blobUri.Segments[1].Trim('/');
+            string blobName = blobUri.Segments.Last();
 
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
