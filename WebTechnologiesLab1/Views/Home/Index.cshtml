@@ -4,16 +4,99 @@
 
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
     <div class="container-fluid py-5 text-center">
-        <h1 class="display-4 fw-bold text-primary">Ласкаво просимо до AppName!</h1>
+        <h1 class="display-4 fw-bold text-primary">Ласкаво просимо!</h1>
         <p class="col-md-8 fs-5 mx-auto text-muted">
-            Тут ви знайдете широкий асортимент товарів та ігор. Наш інтернет-магазин використовує сучасну архітектуру ASP.NET Core для швидкої та безпечної роботи.
+            Тут ви знайдете широкий асортимент товарів. Наш інтернет-магазин використовує сучасну архітектуру ASP.NET Core для швидкої та безпечної роботи.
         </p>
         <hr class="my-4">
         <p class="fs-5">
-            Перегляньте наш каталог, щоб розпочати покупки або керувати товарами.
+            Перегляньте наш каталог, щоб розпочати покупки.
         </p>
         <a class="btn btn-primary btn-lg mt-3" asp-area="" asp-controller="Products" asp-action="Index" role="button">
             Перейти до Каталогу Товарів
         </a>
     </div>
 </div>
+
+<div class="row mt-5" id="statistics-card">
+    <div class="col-md-10 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3>Статистика популярності товарів</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Діаграма показує, які товари замовляли найчастіше.</p>
+                <div style="max-height: 500px;">
+                    <canvas id="salesPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/api/StatisticsApi/ProductSalesData')
+                .then(response => {
+                    if (!response.ok) {
+                        const chartCard = document.getElementById('statistics-card');
+                        if (chartCard) {
+                            chartCard.style.display = 'none';
+                        }
+                        throw new Error('Дані про продажі відсутні.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const labels = data.map(item => item.productName);
+                    const quantities = data.map(item => item.totalQuantity);
+
+                    const generateColors = (num) => {
+                        const colors = [];
+                        for (let i = 0; i < num; i++) {
+                            const r = Math.floor(Math.random() * 255);
+                            const g = Math.floor(Math.random() * 255);
+                            const b = Math.floor(Math.random() * 255);
+                            colors.push(`rgba(${r}, ${g}, ${b}, 0.7)`);
+                        }
+                        return colors;
+                    };
+
+                    const backgroundColors = generateColors(data.length);
+
+                    const ctx = document.getElementById('salesPieChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Кількість продажів',
+                                data: quantities,
+                                backgroundColor: backgroundColors,
+                                borderColor: 'rgba(255, 255, 255, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Загальний розподіл продажів по товарах'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.warn(error.message);
+                });
+        });
+    </script>
+}

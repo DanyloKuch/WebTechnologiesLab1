@@ -17,6 +17,13 @@ builder.Services.AddDbContext<WebDbContext>(options =>
     ));
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<WebDbContext>();
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    });
+
 
 builder.Services.AddScoped<BlobStorageService>();
 
@@ -37,7 +44,6 @@ app.UseRouting();
 app.UseStaticFiles();
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
