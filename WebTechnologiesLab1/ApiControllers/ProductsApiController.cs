@@ -22,13 +22,20 @@ namespace WebTechnologiesLab1.ApiControllers
 
         // GET: api/ProductsApi
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(int pageNumber = 1, int pageSize = 10)
         {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100; 
+
             var products = await _context.Products
-                .Include(p => p.Category) 
+                .Include(p => p.Category)
+                .OrderBy(p => p.id)
+                .Skip((pageNumber - 1) * pageSize) 
+                .Take(pageSize) 
                 .ToListAsync();
 
-            return await _context.Products.ToListAsync();
+            return products; 
         }
 
         // GET: api/ProductsApi/5
