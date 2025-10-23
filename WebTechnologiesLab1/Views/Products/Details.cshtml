@@ -1,11 +1,26 @@
 ﻿@model WebTechnologiesLab1.Models.Product
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = Model.name;
     var imageUrl = string.IsNullOrEmpty(Model.imageUrl) ? "https://placehold.co/600x400?text=No+Image" : Model.imageUrl;
+
+    var metaDescription = Model.description ?? $"Купити {Model.name} за найкращою ціною.";
+    if (metaDescription.Length > 155)
+    {
+        metaDescription = metaDescription.Substring(0, 155).Trim() + "...";
+    }
 }
 
-<h1 class="display-4 mb-4">Деталі Товару</h1>
+@section Head {
+    <meta name="description" content="@metaDescription" />
+    <meta name="keywords" content="@Model.name, @Model.Category?.Name, купити, ціна" />
+    <meta property="og:title" content="@Model.name" />
+    <meta property="og:description" content="@metaDescription" />
+    <meta property="og:image" content="@imageUrl" />
+    <meta property="og:type" content="website" />
+}
+
+<h1 class="display-4 mb-4">@Html.DisplayFor(model => model.name)</h1>
 
 <div class="row">
     <div class="col-lg-8 mx-auto">
@@ -17,7 +32,7 @@
                         <h2 class="card-title mb-0">@Html.DisplayFor(model => model.name)</h2>
                         <p class="card-text text-muted">
                             <span class="badge bg-info">@Html.DisplayFor(model => model.Category.Name)</span>
-                        </p>
+                            </D>
                     </div>
                     <span class="fs-3 fw-bold text-success">@Model.price.ToString("C")</span>
                 </div>
