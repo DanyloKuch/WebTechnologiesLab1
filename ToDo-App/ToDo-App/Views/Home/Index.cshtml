@@ -1,8 +1,212 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Real-time ToDo List";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h1 class="text-center">Мій список завдань</h1>
+
+        <div class="input-group mb-3 shadow-sm">
+            <input type="text" id="taskInput" class="form-control" placeholder="Нове завдання...">
+            <button id="addTaskBtn" class="btn btn-primary">Додати</button>
+        </div>
+
+        <ul id="taskList" class="list-group">
+        </ul>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/toDoHub")
+            .build();
+
+        function saveTasksToLocalStorage() {
+            const tasks = [];
+            taskList.querySelectorAll('.task-text').forEach(span => {
+                tasks.push(span.textContent);
+            });
+            localStorage.setItem('todo_tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasksFromLocalStorage() {
+            const tasks = JSON.parse(localStorage.getItem('todo_tasks') || '[]');
+            taskList.innerHTML = '';
+            tasks.forEach(taskText => {
+                const li = createTaskElement(taskText);
+                taskList.appendChild(li);
+            });
+        }
+
+
+        connection.on("ReceiveCurrentTasks", (tasks) => {
+            taskList.innerHTML = ''; 
+            tasks.forEach(taskText => {
+                const li = createTaskElement(taskText);
+                taskList.appendChild(li);
+            });
+            saveTasksToLocalStorage();
+        });
+
+        connection.on("ReceiveNewTask", (taskText) => {
+            const li = createTaskElement(taskText);
+            taskList.appendChild(li);
+            highlightElement(li);
+            saveTasksToLocalStorage(); 
+        });
+
+        connection.on("ReceiveDeleteTask", (taskIndex) => {
+            if (taskIndex >= 0 && taskIndex < taskList.children.length) {
+                const li = taskList.children[taskIndex];
+                li.classList.add('bg-danger', 'text-white');
+                setTimeout(() => {
+                    taskList.removeChild(li);
+                    saveTasksToLocalStorage();
+                }, 500);
+            }
+        });
+
+        connection.on("ReceiveEditTask", (taskIndex, newTaskText) => {
+            if (taskIndex >= 0 && taskIndex < taskList.children.length) {
+                const li = taskList.children[taskIndex];
+                const textElement = li.querySelector('.task-text, .task-edit-input');
+
+                if (textElement.tagName === 'INPUT') {
+                    const newSpan = document.createElement('span');
+                    newSpan.className = 'task-text';
+                    newSpan.textContent = newTaskText;
+                    li.replaceChild(newSpan, textElement);
+                } else {
+                    textElement.textContent = newTaskText;
+                }
+
+                li.querySelector('.button-group').style.display = 'block';
+                highlightElement(li);
+                saveTasksToLocalStorage();
+            }
+        });
+
+        connection.on("ReceiveMoveTask", (oldIndex, newIndex) => {
+            const item = taskList.children[oldIndex];
+            const target = taskList.children[newIndex];
+
+            if (oldIndex < newIndex) {
+                taskList.insertBefore(item, target.nextSibling);
+            } else {
+                taskList.insertBefore(item, target);
+            }
+            highlightElement(item);
+        });
+
+        function createTaskElement(taskText) {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+            const span = document.createElement('span');
+            span.className = 'task-text';
+            span.textContent = taskText;
+
+            const buttonGroup = document.createElement('div');
+            buttonGroup.className = 'button-group';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-warning btn-sm me-2';
+            editBtn.textContent = 'Змінити';
+            editBtn.onclick = function() {
+                enableEditMode(li, span, buttonGroup);
+            };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.textContent = 'Видалити';
+            deleteBtn.onclick = function() {
+                const index = Array.from(taskList.children).indexOf(li);
+                connection.invoke("SendDeleteTask", index).catch(err => console.error(err));
+            };
+
+            buttonGroup.appendChild(editBtn);
+            buttonGroup.appendChild(deleteBtn);
+            li.appendChild(span);
+            li.appendChild(buttonGroup);
+            return li;
+        }
+
+        function enableEditMode(li, span, buttonGroup) {
+            const currentText = span.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control task-edit-input';
+            input.value = currentText;
+
+            const save = () => {
+                const newText = input.value.trim();
+                if (newText === "" || newText === currentText) {
+                     li.replaceChild(span, input);
+                     buttonGroup.style.display = 'block';
+                } else {
+                    const index = Array.from(taskList.children).indexOf(li);
+                    connection.invoke("SendEditTask", index, newText).catch(err => console.error(err));
+                }
+            };
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') save();
+            });
+            input.addEventListener('blur', save);
+
+            buttonGroup.style.display = 'none';
+            li.replaceChild(input, span);
+            input.focus();
+        }
+
+        function highlightElement(el) {
+            el.style.transition = 'background-color 0.5s ease';
+            el.style.backgroundColor = '#ffc107';
+            setTimeout(() => el.style.backgroundColor = '', 1000);
+        }
+
+
+        function addNewTaskToServer() {
+             const taskText = taskInput.value.trim();
+            if (taskText !== "") {
+                connection.invoke("SendNewTask", taskText).catch(err => console.error(err));
+                taskInput.value = '';
+            }
+        }
+
+        addTaskBtn.addEventListener('click', addNewTaskToServer);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addNewTaskToServer();
+        });
+
+        new Sortable(taskList, {
+            animation: 150,
+            onEnd: function (evt) {
+                connection.invoke("SendMoveTask", evt.oldIndex, evt.newIndex)
+                    .catch(err => console.error(err));
+                saveTasksToLocalStorage();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadTasksFromLocalStorage);
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+        start();
+    </script>
+}
