@@ -26,6 +26,7 @@ builder.Services.AddAuthentication()
 
 
 builder.Services.AddScoped<BlobStorageService>();
+builder.Services.AddResponseCaching();
 
 builder.Services.AddRazorPages();
 
@@ -39,6 +40,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseResponseCaching();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseStaticFiles();

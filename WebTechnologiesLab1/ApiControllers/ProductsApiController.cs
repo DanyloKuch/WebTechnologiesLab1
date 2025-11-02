@@ -22,6 +22,7 @@ namespace WebTechnologiesLab1.ApiControllers
 
         // GET: api/ProductsApi
         [HttpGet]
+        [ResponseCache(Duration = 60)]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts(int pageNumber = 1, int pageSize = 10)
         {
             if (pageNumber < 1) pageNumber = 1;

@@ -9,6 +9,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using WebTechnologiesLab1.Data;
 using WebTechnologiesLab1.Models;
+using System.Net.Http;
+using System.Web;
+using Microsoft.Extensions.Logging;
 
 namespace WebTechnologiesLab1.Controllers
 {
@@ -16,10 +19,14 @@ namespace WebTechnologiesLab1.Controllers
     public class OrdersController : Controller
     {
         private readonly WebDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<OrdersController> _logger;
 
-        public OrdersController(WebDbContext context)
+        public OrdersController(WebDbContext context, IConfiguration configuration, ILogger<OrdersController> logger)
         {
             _context = context;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         // GET: Orders
@@ -113,6 +120,29 @@ namespace WebTechnologiesLab1.Controllers
             _context.CartItems.RemoveRange(cart.CartItems);
 
             await _context.SaveChangesAsync();
+
+            try
+            {
+                string token = _configuration["Telegram:BotToken"];
+                string chatId = _configuration["Telegram:ChatId"];
+
+                if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(chatId))
+                {
+                    string message = $"🎉 Нове замовлення!\nID: {order.Id}\nСума: {order.TotalAmount:C}\nАдреса: {order.DeliveryAddress}\nТелефон: {order.PhoneNumber}";
+
+                    string encodedMessage = HttpUtility.UrlEncode(message);
+                    string url = $"https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={encodedMessage}";
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        _ = httpClient.GetAsync(url);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending Telegram notification");
+            }
 
             return RedirectToAction("Confirmation", new { id = order.Id });
         }
