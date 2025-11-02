@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using WebTechnologiesLab1.Models;
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="utf-8" />
@@ -32,6 +37,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
                         </li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            var user = await UserManager.GetUserAsync(User);
+                            if (user != null && user.IsPremiumUser)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-warning" asp-area="" asp-controller="Home" asp-action="PremiumPage">
+                                        🌟 Premium
+                                    </a>
+                                </li>
+                            }
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
