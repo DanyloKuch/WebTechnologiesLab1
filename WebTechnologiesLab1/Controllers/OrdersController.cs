@@ -129,13 +129,18 @@ namespace WebTechnologiesLab1.Controllers
                 if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(chatId))
                 {
                     string message = $"🎉 Нове замовлення!\nID: {order.Id}\nСума: {order.TotalAmount:C}\nАдреса: {order.DeliveryAddress}\nТелефон: {order.PhoneNumber}";
-
                     string encodedMessage = HttpUtility.UrlEncode(message);
                     string url = $"https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={encodedMessage}";
 
                     using (var httpClient = new HttpClient())
                     {
-                        _ = httpClient.GetAsync(url);
+                        HttpResponseMessage response = await httpClient.GetAsync(url);
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            string errorBody = await response.Content.ReadAsStringAsync();
+                            _logger.LogError("Telegram API Error: {StatusCode} - {ErrorBody}", response.StatusCode, errorBody);
+                        }
                     }
                 }
             }
