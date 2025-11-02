@@ -7,7 +7,7 @@ using Azure.Identity;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-
+using Azure.Storage.Blobs; 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
@@ -31,10 +31,13 @@ builder.Services.AddResponseCaching();
 builder.Services.AddRazorPages();
 
 string blobConnectionString = builder.Configuration.GetConnectionString("BlobStorageConnectionString");
+string blobContainerName = "dataprotection-keys"; 
 
 if (!string.IsNullOrEmpty(blobConnectionString))
 {
-    string blobContainerName = "dataprotection-keys";
+    var blobServiceClient = new BlobServiceClient(blobConnectionString);
+    blobServiceClient.GetBlobContainerClient(blobContainerName)
+                     .CreateIfNotExists();
 
     builder.Services.AddDataProtection()
         .PersistKeysToAzureBlobStorage(blobConnectionString, blobContainerName, "keys.xml");
@@ -45,7 +48,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
-
 
 var app = builder.Build();
 
@@ -58,12 +60,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); 
+app.UseStaticFiles();
 app.UseRouting();
 
-app.UseResponseCaching(); 
+app.UseResponseCaching();
 
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
