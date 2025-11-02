@@ -154,18 +154,19 @@ namespace WebTechnologiesLab1.Controllers
         // GET: Orders/Confirmation/5
         public async Task<IActionResult> Confirmation(int id)
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
             var order = await _context.Orders
-                .Include(o => o.OrderItems) 
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (order == null || order.UserId != userId)
+            if (order == null)
             {
                 return NotFound();
             }
-            return View(order);
 
+            ViewData["MapboxAccessToken"] = _configuration["Mapbox:AccessToken"];
+
+            return View(order); 
         }
 
     }

@@ -1,7 +1,9 @@
-﻿@model WebTechnologiesLab1.Models.Order
-@{
+﻿@{
     ViewData["Title"] = "Замовлення підтверджено";
 }
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
 
 <div class="row">
     <div class="col-md-8 offset-md-2">
@@ -26,18 +28,17 @@
 
                     <dt class="col-sm-4">Статус:</dt>
                     <dd class="col-sm-8">@Model.Status</dd>
-                    
-                    @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
-                    {
-                        <dt class="col-sm-4">Адреса доставки:</dt>
-                        <dd class="col-sm-8">@Model.DeliveryAddress</dd>
-                    }
-                    
                     @if (!string.IsNullOrEmpty(Model.PhoneNumber))
                     {
                         <dt class="col-sm-4">Телефон:</dt>
                         <dd class="col-sm-8">@Model.PhoneNumber</dd>
                     }
+                    @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
+                    {
+                        <dt class="col-sm-4">Адреса доставки:</dt>
+                        <dd class="col-sm-8">@Model.DeliveryAddress</dd>
+                    }
+                    <div id="map" style="width: 100%; height: 300px; border-radius: 8px;"></div>
                 </dl>
                 
                 <hr />
@@ -78,3 +79,38 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const accessToken = '@ViewData["MapboxAccessToken"]';
+        const deliveryAddress = "@Model.DeliveryAddress";
+
+        mapboxgl.accessToken = accessToken;
+
+        const encodedAddress = encodeURIComponent(deliveryAddress);
+        const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${accessToken}`;
+
+        fetch(geocodingUrl)
+            .then(response => response.json())
+            .then(data => {
+
+                const coordinates = data.features[0].center;
+                console.log("Coordinates:", coordinates); 
+
+                const map = new mapboxgl.Map({
+                    container: 'map', 
+                    style: 'mapbox://styles/mapbox/streets-v11', 
+                    center: coordinates, 
+                    zoom: 14 
+                });
+
+                new mapboxgl.Marker()
+                    .setLngLat(coordinates)
+                    .addTo(map);
+            })
+            .catch(err => {
+                console.error("Помилка Geocoding:", err);
+                document.getElementById('map').style.display = 'none';
+            });
+    </script>
+}
