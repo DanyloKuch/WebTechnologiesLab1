@@ -25,6 +25,18 @@ namespace WebTechnologiesLab1.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Order>()
+        .Property(o => o.TotalAmount)
+        .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<OrderItem>()
+                .Property(oi => oi.PriceAtPurchase)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.price)
+                .HasColumnType("decimal(18,2)");
+
             modelBuilder.Entity<ApplicationUser>()
                 .HasOne(a => a.Cart)
                 .WithOne(c => c.ApplicationUser)
