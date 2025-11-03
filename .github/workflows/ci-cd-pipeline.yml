@@ -14,7 +14,6 @@ env:
   WORKING_DIRECTORY: ./WebTechnologiesLab1 
 
 jobs: 
-  # Виконуємо збірку, щоб перевірити, чи код компілюється (Це етап-перевірка)
   build:        
     runs-on: ubuntu-latest
     steps:
@@ -28,37 +27,29 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ${{ env.WORKING_DIRECTORY }}
       
-  # Збірка, публікація Docker-образу та Розгортання
   docker-build-and-deploy: 
     runs-on: ubuntu-latest
-    needs: build # Запуститься лише, якщо крок 'build' успішний
+    needs: build 
     steps:
     - uses: actions/checkout@v4
     
-    # Крок 1: Вхід у Docker Hub (використовує секрети)
     - name: Log in to Docker Hub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
       
-    # Крок 2: Збірка та публікація Docker image
     - name: Build and push Docker image
       run: |
         IMAGE_TAG=${{ github.sha }}
-        # Збірка: Вказуємо папку з контекстом та Dockerfile
         docker build . -f ${{ env.WORKING_DIRECTORY }}/Dockerfile    -t ${{ env.DOCKER_IMAGE_NAME }}:$IMAGE_TAG
-        # Публікація
         docker push ${{ env.DOCKER_IMAGE_NAME }}:$IMAGE_TAG
         
-    # Крок 3: Аутентифікація в Azure (Замість Publish Profile)
     - name: Azure Login
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         
-    # Крок 4: Розгортання в Azure WebApp
     - name: Deploy to Azure WebApp
-      uses: azure/webapps-deploy@v3 # Використовуємо v3 для аутентифікації Service Principal
+      uses: azure/webapps-deploy@v3 
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        # Використовуємо AZURE_CREDENTIALS, тому передаємо Resource Group через секрет
         resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }} 
         images: ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
