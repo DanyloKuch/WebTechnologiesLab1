@@ -115,16 +115,13 @@ namespace WebTechnologiesLab1.Controllers
                 {
                     if (imageFile != null && imageFile.Length > 0)
                     {
-                        // Спочатку видаляємо старе зображення, якщо воно було
                         if (!string.IsNullOrEmpty(product.imageUrl))
                         {
                             await _blobStorageService.DeleteFileAsync(product.imageUrl);
                         }
 
-                        // Завантажуємо новий файл і отримуємо його URL
                         string imageUrlString = await _blobStorageService.UploadFileAsync(imageFile, "product-images");
 
-                        // Оновлюємо URL в моделі
                         product.imageUrl = imageUrlString;
                     }
                     _context.Update(product);
@@ -176,7 +173,6 @@ namespace WebTechnologiesLab1.Controllers
             {
                 if (!string.IsNullOrEmpty(product.imageUrl))
                 {
-                    // Видаляємо файл зі сховища Azure
                     await _blobStorageService.DeleteFileAsync(product.imageUrl);
                 }
                 _context.Products.Remove(product);

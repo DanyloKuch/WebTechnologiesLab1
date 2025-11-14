@@ -85,7 +85,7 @@
 
                     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
                     if (!allowedTypes.includes(file.type)) {
-                        errorSpan.textContent = 'Неприпустимий тип файлу. Дозволено лише зображення (jpeg, png, gif, webp).';
+                        errorSpan.textContent = 'Неприпустимий тип файлу. Дозволено лише зображення (jpeg, png, gif).';
                         event.preventDefault(); 
                         return;
                     }
