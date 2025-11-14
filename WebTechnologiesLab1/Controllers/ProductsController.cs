@@ -107,6 +107,8 @@ namespace WebTechnologiesLab1.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove("imageFile");
+
             if (ModelState.IsValid)
             {
                 try
