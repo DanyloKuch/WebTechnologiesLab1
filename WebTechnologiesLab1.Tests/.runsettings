@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[WebTechnologiesLab1]WebTechnologiesLab1.Models.*,[WebTechnologiesLab1]WebTechnologiesLab1.Services.*,[WebTechnologiesLab1]WebTechnologiesLab1.ApiControllers.*</Include>
+          <Exclude>[*]*.Migrations.*,[*]*.Tests.*</Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
