@@ -19,9 +19,6 @@ namespace WebTechnologiesLab1.Tests
         private readonly Mock<WebDbContext> _contextMock;
         private readonly CategoriesApiController _controller;
 
-        // ===================================================================
-        // Fixture / Setup (Вимога ТЗ: Налаштування контексту перед тестами)
-        // ===================================================================
         public CategoriesApiControllerTests()
         {
             var options = new DbContextOptions<WebDbContext>();
@@ -32,25 +29,19 @@ namespace WebTechnologiesLab1.Tests
         [Fact]
         public async Task GetCategories_ReturnsAllCategories()
         {
-            // Arrange
             var categories = new List<Category>
             {
                 new Category { Id = 1, Name = "Electronics" },
                 new Category { Id = 2, Name = "Books" }
             }.AsQueryable();
 
-            // Використовуємо локальний метод для створення Mock DbSet з підтримкою асинхронності (ToListAsync)
             var mockSet = CreateMockDbSet(categories);
             _contextMock.Setup(c => c.Categories).Returns(mockSet.Object);
 
-            // Act
             var result = await _controller.GetCategories();
 
-            // Assert
-            // Простий Assert: перевіряємо, що тип результату є очікуваним
             Assert.IsType<ActionResult<IEnumerable<Category>>>(result);
 
-            // Витягуємо значення і перевіряємо його довжину
             var returnedCategories = Assert.IsAssignableFrom<IEnumerable<Category>>(result.Value).ToList();
             Assert.Equal(2, returnedCategories.Count);
         }
@@ -58,20 +49,15 @@ namespace WebTechnologiesLab1.Tests
         [Fact]
         public async Task GetCategory_ValidId_ReturnsCategory()
         {
-            // Arrange
             var category = new Category { Id = 1, Name = "Laptops" };
             var mockSet = new Mock<DbSet<Category>>();
 
-            // Мокаємо саме метод FindAsync, який використовується в контролері
             mockSet.Setup(m => m.FindAsync(new object[] { 1 })).ReturnsAsync(category);
             _contextMock.Setup(c => c.Categories).Returns(mockSet.Object);
 
-            // Act
             var result = await _controller.GetCategory(1);
 
-            // Assert
             var actionResult = Assert.IsType<ActionResult<Category>>(result);
-            // Простий Assert: перевіряємо збіг ID та імені
             Assert.Equal(1, actionResult.Value.Id);
             Assert.Equal("Laptops", actionResult.Value.Name);
         }
@@ -79,39 +65,29 @@ namespace WebTechnologiesLab1.Tests
         [Fact]
         public async Task GetCategory_InvalidId_ReturnsNotFound()
         {
-            // Arrange
             var mockSet = new Mock<DbSet<Category>>();
-            // Імітуємо ситуацію, коли FindAsync не знаходить категорію (повертає null)
             mockSet.Setup(m => m.FindAsync(new object[] { 99 })).ReturnsAsync((Category)null);
             _contextMock.Setup(c => c.Categories).Returns(mockSet.Object);
 
-            // Act
             var result = await _controller.GetCategory(99);
 
-            // Assert
-            // Простий Assert: перевіряємо, що контролер правильно реагує на відсутність даних (404 Not Found)
             Assert.IsType<NotFoundResult>(result.Result);
         }
 
         [Fact]
         public async Task CreateCategory_ValidCategory_ReturnsCreatedAtAction()
         {
-            // Arrange
             var newCategory = new Category { Id = 3, Name = "Furniture" };
             var mockSet = new Mock<DbSet<Category>>();
             _contextMock.Setup(c => c.Categories).Returns(mockSet.Object);
 
-            // Act
             var result = await _controller.CreateCategory(newCategory);
 
-            // Assert
-            // Перевіряємо, що повернувся статус 201 Created
             var createdAtResult = Assert.IsType<CreatedAtActionResult>(result.Result);
             var returnedCategory = Assert.IsType<Category>(createdAtResult.Value);
 
             Assert.Equal("Furniture", returnedCategory.Name);
 
-            // Перевіряємо, що методи Add та SaveChangesAsync дійсно були викликані рівно 1 раз
             mockSet.Verify(m => m.Add(It.IsAny<Category>()), Times.Once);
             _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once);
         }
@@ -119,20 +95,15 @@ namespace WebTechnologiesLab1.Tests
         [Fact]
         public async Task DeleteCategory_ValidId_ReturnsNoContent()
         {
-            // Arrange
             var category = new Category { Id = 1, Name = "ToDelete" };
             var mockSet = new Mock<DbSet<Category>>();
             mockSet.Setup(m => m.FindAsync(new object[] { 1 })).ReturnsAsync(category);
             _contextMock.Setup(c => c.Categories).Returns(mockSet.Object);
 
-            // Act
             var result = await _controller.DeleteCategory(1);
 
-            // Assert
-            // Перевіряємо, що повернувся статус 204 No Content
             Assert.IsType<NoContentResult>(result);
 
-            // Перевіряємо, що викликано видалення
             mockSet.Verify(m => m.Remove(category), Times.Once);
             _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once);
         }
@@ -140,14 +111,10 @@ namespace WebTechnologiesLab1.Tests
         [Fact]
         public async Task UpdateCategory_IdMismatch_ReturnsBadRequest()
         {
-            // Arrange
             var category = new Category { Id = 2, Name = "Mismatch" };
 
-            // Act: передаємо id=1, але категорія має Id=2
             var result = await _controller.UpdateCategory(1, category);
 
-            // Assert
-            // Перевіряємо, що контролер повертає 400 Bad Request при конфлікті ідентифікаторів
             Assert.IsType<BadRequestResult>(result);
         }
 
