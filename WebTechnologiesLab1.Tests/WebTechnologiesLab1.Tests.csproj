@@ -8,28 +8,19 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- xUnit v3 (рекомендовано для .NET 8+) -->
-		<PackageReference Include="coverlet.collector" Version="8.0.1">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
-		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
 		<PackageReference Include="xunit.v3" Version="1.0.0" />
-
-		<!-- Visual Studio Test Explorer adapter (підтримує xUnit v3 і .NET 9) -->
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-
-		<!-- Обов’язковий для dotnet test / VS Test Explorer -->
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-
-		<!-- Moq – стабільна версія, працює з .NET 9 -->
-		<PackageReference Include="Moq" Version="4.20.72" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\WebTechnologiesLab1\WebTechnologiesLab1.csproj" />
+		<PackageReference Include="coverlet.collector" Version="8.0.1">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Selenium.WebDriver" Version="4.27.0" />
+		<PackageReference Include="Selenium.Support" Version="4.27.0" />
+		<PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="135.0.7049.8400" />
 	</ItemGroup>
 
 </Project>
