@@ -7,26 +7,79 @@ namespace WebTechnologiesLab1.Tests;
 
 // Базова URL сайту — змінити на актуальну перед запуском
 // Наприклад: "https://localhost:7210" або "http://localhost:5000"
-public class SeleniumTests : IDisposable
+public class SeleniumTests : IClassFixture<WebHostFixture>, IDisposable
 {
-    private const string BaseUrl = "https://localhost:7210";
-
+    private const string BaseUrl = "https://localhost:7062";
+    private const string TestEmail = "selenium-test@example.com";
+    private const string TestPassword = "Selenium123!";
     private readonly IWebDriver _driver;
     private readonly WebDriverWait _wait;
 
-    public SeleniumTests()
+    public SeleniumTests(WebHostFixture _)
     {
-        var options = new ChromeOptions();
+        var options = new ChromeOptions
+        {
+            AcceptInsecureCertificates = true
+        };
         options.AddArgument("--ignore-certificate-errors");
+        options.AddArgument("--allow-insecure-localhost");
         options.AddArgument("--start-maximized");
 
         _driver = new ChromeDriver(options);
-        _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+        _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
     }
 
     public void Dispose()
     {
         _driver.Quit();
+    }
+
+    // -------------------------------------------------------------------------
+    // Допоміжний метод: гарантує, що тестовий користувач залогінений.
+    // Якщо логін з фіксованими credentials падає — реєструє користувача
+    // (RequireConfirmedAccount = false → автоматичний логін після Register).
+    // -------------------------------------------------------------------------
+    private void EnsureLoggedIn()
+    {
+        _driver.Navigate().GoToUrl($"{BaseUrl}/Identity/Account/Login");
+
+        var emailInput = _wait.Until(d => d.FindElement(By.Id("Input_Email")));
+        emailInput.Clear();
+        emailInput.SendKeys(TestEmail);
+
+        var passwordInput = _driver.FindElement(By.Id("Input_Password"));
+        passwordInput.Clear();
+        passwordInput.SendKeys(TestPassword);
+
+        _driver.FindElement(By.Id("login-submit")).Click();
+
+        try
+        {
+            _wait.Until(d => !d.Url.Contains("/Identity/Account/Login"));
+            return;
+        }
+        catch (WebDriverTimeoutException)
+        {
+            // Користувач ще не існує — реєструємо
+        }
+
+        _driver.Navigate().GoToUrl($"{BaseUrl}/Identity/Account/Register");
+
+        var regEmail = _wait.Until(d => d.FindElement(By.Id("Input_Email")));
+        regEmail.Clear();
+        regEmail.SendKeys(TestEmail);
+
+        var regPassword = _driver.FindElement(By.Id("Input_Password"));
+        regPassword.Clear();
+        regPassword.SendKeys(TestPassword);
+
+        var regConfirm = _driver.FindElement(By.Id("Input_ConfirmPassword"));
+        regConfirm.Clear();
+        regConfirm.SendKeys(TestPassword);
+
+        _driver.FindElement(By.Id("registerSubmit")).Click();
+
+        _wait.Until(d => !d.Url.Contains("/Identity/Account/Register"));
     }
 
     // -------------------------------------------------------------------------
@@ -36,7 +89,8 @@ public class SeleniumTests : IDisposable
     [Fact]
     public void HomePageCatalogButton_NavigatesToProductsPage()
     {
-        // Arrange – відкриваємо головну сторінку
+        // Arrange – логінимось і відкриваємо головну сторінку
+        EnsureLoggedIn();
         _driver.Navigate().GoToUrl(BaseUrl);
 
         // Act – знаходимо кнопку "Перейти до Каталогу Товарів" і натискаємо
@@ -82,10 +136,14 @@ public class SeleniumTests : IDisposable
         _wait.Until(d => d.Url.Contains("Login"));
         Assert.Contains("Login", _driver.Url);
 
-        // Assert 2 – з'являється повідомлення про невірні дані
-        var errorSummary = _wait.Until(d =>
-            d.FindElement(By.CssSelector(".validation-summary-errors, [role='alert']")));
-        Assert.False(string.IsNullOrWhiteSpace(errorSummary.Text));
+        // Assert 2 – з'являється повідомлення про невірні дані (текст не пустий)
+        var errorSummary = _wait.Until<IWebElement?>(d =>
+        {
+            var el = d.FindElement(By.CssSelector("div[role='alert']"));
+            return !string.IsNullOrWhiteSpace(el.Text) ? el : null;
+        });
+        Assert.NotNull(errorSummary);
+        Assert.Contains("Invalid", errorSummary!.Text);
     }
 
     // -------------------------------------------------------------------------

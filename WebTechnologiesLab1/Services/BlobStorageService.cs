@@ -6,16 +6,19 @@ namespace WebTechnologiesLab1.Services
 {
     public class BlobStorageService
     {
-        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobServiceClient? _blobServiceClient;
 
         public BlobStorageService(IConfiguration configuration)
         {
-            _blobServiceClient = new BlobServiceClient(configuration.GetConnectionString("BlobStorageConnectionString"));
+            var connectionString = configuration.GetConnectionString("BlobStorageConnectionString");
+            _blobServiceClient = string.IsNullOrEmpty(connectionString)
+                ? null
+                : new BlobServiceClient(connectionString);
         }
 
         public async Task<string> UploadFileAsync(IFormFile file, string containerName)
         {
-            if (file == null || file.Length == 0)
+            if (file == null || file.Length == 0 || _blobServiceClient == null)
             {
                 return null;
             }
@@ -41,7 +44,7 @@ namespace WebTechnologiesLab1.Services
 
         public async Task DeleteFileAsync(string fileUrl)
         {
-            if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out Uri blobUri))
+            if (_blobServiceClient == null || !Uri.TryCreate(fileUrl, UriKind.Absolute, out Uri blobUri))
             {
                 return;
             }
